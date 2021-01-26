@@ -50,16 +50,16 @@ void DFRobot_LIS331HH::setRange(eRange_t range){
   readReg(regester,&reg,1);
   _range = range;
   switch(range){
-   case eLIS331HH_RANGE_6GA :{
+   case eLis331hhRange_6g :{
      reg = reg&(~(3<<4));
      break;
    }
-   case eLIS331HH_RANGE_12GA :{
+   case eLis331hhRange_12g :{
      reg = reg&(~(3<<4));
      reg = reg | (0x01<<4);
      break;
    }
-   case eLIS331HH_RANGE_24GA : {
+   case eLis331hhRange_24g : {
      reg = reg&(~(3<<4));
      reg = reg | (0x03<<4);
    }
@@ -275,9 +275,9 @@ int DFRobot_LIS331HH::enableSleep(bool enable)
 void DFRobot_LIS331HH::setHFilterMode(eHighPassFilter_t mode){
 
   uint8_t reg = 0;
-  uint8_t regester = LIS331HH_REG_CTRL_REG1;
+  uint8_t regester = LIS331HH_REG_CTRL_REG2;
   if(_interface == 1){
-    regester  = LIS331HH_REG_CTRL_REG1 | 0x80;
+    regester  = LIS331HH_REG_CTRL_REG2 | 0x80;
   }
   readReg(regester,&reg,1);
   if(mode == eShutDown){
@@ -289,7 +289,7 @@ void DFRobot_LIS331HH::setHFilterMode(eHighPassFilter_t mode){
   reg = reg & (~3);
   reg = reg | (uint8_t)mode;
   DBG(reg);
-  writeReg(LIS331HH_REG_CTRL_REG1,&reg,1);
+  writeReg(LIS331HH_REG_CTRL_REG2,&reg,1);
 }
 void DFRobot_LIS331HH::enableXYZ(){
   uint8_t reg = 0;

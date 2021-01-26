@@ -1,9 +1,20 @@
 # HX711-Arduino
-HX711 is a 24-bit A / D converter chip designed for high-precision electronic scales.<br>
-This example is suitable for HX711 sensor and read data through Arduino.<br>
+The H3LIS200DL is a low-power high performance 3-axis linear accelerometer <br>
+belonging to the “nano” family, with digital I2C/SPI <br>
+serial interface standard output. <br>
+The device features ultra-low-power operational <br>
+modes that allow advanced power saving and <br>
+smart sleep-to-wakeup functions.<br>
+The H3LIS200DL has dynamically user selectable full scales of ±100g/±200g and is <br>
+capable of measuring accelerations with output <br>
+data rates from 0.5 Hz to 1 kHz.<br>
+The H3LIS200DL is available in a small thin <br>
+plastic land grid array package (LGA) and is <br>
+guaranteed to operate over an extended <br>
+temperature range from -40 °C to +85 °C.<br>
 
 
-## DFRobot_HX711_I2C Library for Arduino
+## DFRobot_H3LIS200DL Library for Arduino
 ---------------------------------------------------------
 
 Provide an Arduino library to get weight by reading data from HX711.
@@ -19,7 +30,7 @@ Provide an Arduino library to get weight by reading data from HX711.
 
 ## Summary
 
-Provide an Arduino library to get weight by reading data from HX711.
+Provide an Arduino library to get Three-axis acceleration by reading data from H3LIS200DL.
 
 ## Installation
 
@@ -28,40 +39,108 @@ To use this library, first download the library file, paste it into the \Arduino
 ## Methods
 
 ```C++
+#include <DFRobot_H3LIS200DL.h>
 
-#include <DFRobot_HX711_I2C.h>
+  DFRobot_H3LIS200DL();
+  /**
+   * @brief Initialize the function
+   * @return Return 0 indicates a successful initialization, while other values indicates failure and return to error code.
+   */
+  int begin(void);
+ 
+  /**
+   * @brief Get chip id
+   * @return Returns the eight-digit serial number
+   */
+  uint8_t getID();
+  
+  /**
+   * @brief Enable interrupt
+   * @param source:Interrupt pin selection
+   * @param event:Interrupt event selection
+   */
+  void enableInterruptEvent(eInterruptSource_t source, eInterruptEvent_t event);
+  
+  /**
+   * @brief Set the measurement range
+   * @param range:Range(g)
+            eOnehundred =  ±100g
+            eTwohundred = ±200g
+   */
+  void setRange(eRange_t range);
+  
+  /**
+   * @brief Set data measurement rate
+   * @param range:rate(g)
+   */
+  void setAcquireRate(ePowerMode_t rate);
+  
+  /**
+   * @brief Set data filtering mode
+   * @param mode:Four modes
+                 eCutoffMode1 = 0,
+                 eCutoffMode2,
+                 eCutoffMode3,
+                 eCutoffMode4,
+                 eShutDown,
+   */
+  void setHFilterMode(eHighPassFilter_t mode);
 
-/*!
- * @brief Constructor 
- * @param pWire I2c controller
- * @param addr  I2C address(0x64/0x65/0x660x67)
- */
-DFRobot_HX711_I2C(TwoWire * pWire = &Wire,uint8_t addr = HX711_I2C_ADDR);
+  /**
+   * @brief Set the threshold of interrupt source 1 interrupt
+   * @param threshold:Threshold(g)
+   */
+  void setIntOneTh(uint8_t threshold);//0 - 100 / 0 - 200 
 
-/**
- * @brief init function
- * @return Return 1 if initialization succeeds, otherwise return non-zero and error code.
- */
-int begin(void);
+  /**
+   * @brief Set interrupt source 2 interrupt generation threshold
+   * @param threshold:Threshold(g)
+   */
+  void setIntTwoTh(uint8_t threshold);//0 - 100 / 0 - 200 
 
-/**
- * @brief Get the weight of the object
- * @param times Take the average several times
- * @return Return the read weight value, unit: g
- */
-float readWeight(uint8_t times = 12);
+  /**
+   * @brief Enable sleep wake function
+   * @param enable:true\false
+   * @return 0
+   */
+  int enableSleep(bool enable);
+  
+  /**
+   * @brief Get the acceleration in the three directions of xyz
+   * @return Three-axis acceleration 
+             acceleration_x;
+             acceleration_y;
+             acceleration_z;
+   */
+  sAccel_t getAcceFromXYZ();
 
-/**
- * @brief get calibration value 
- * @return return the read calibration value
- */
-float getCalibration();
+  /**
+   * @brief Check whether the interrupt event'source' is generated in interrupt 1
+   * @param source:中断事件
+                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                   eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                   eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+   * @return true ：产生
+             false：未产生
+   */
+  bool getInt1Event(eInterruptEvent_t source);
 
-/**
- * @brief Set calibration value
- * @return return the read calibration value
- */
-void  setCalibration(float value);
+  /**
+   * @brief Check whether the interrupt event'source' is generated in interrupt 2
+   * @param source:中断事件
+                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                   eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                   eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+   * @return true ：产生
+             false：未产生
+   */
+  bool getInt2Event(eInterruptEvent_t source);
 
 
 ```

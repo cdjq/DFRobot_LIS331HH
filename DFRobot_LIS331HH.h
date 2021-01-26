@@ -19,7 +19,7 @@
 #endif
 #include <Wire.h>
 #include <SPI.h>
-#define ENABLE_DBG
+//#define ENABLE_DBG
 
 #ifdef ENABLE_DBG
 #define DBG(...) {Serial.print("["); Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
@@ -36,35 +36,36 @@
 
 class DFRobot_LIS331HH
 {
-  #define H3LIS200DL_REG_CARD_ID    0x0F     /*Chip id*/
-  #define H3LIS200DL_REG_CTRL_REG1  0x20     /*Control register 1*/
-  #define H3LIS200DL_REG_CTRL_REG4  0x23     /*Control register 4*/
-  #define H3LIS200DL_REG_CTRL_REG2  0x21     /*Control register 2*/
-  #define H3LIS200DL_REG_CTRL_REG3  0x22     /*Control register 3*/
-  #define H3LIS200DL_REG_CTRL_REG5  0x24     /*Control register 5*/
-  #define H3LIS200DL_REG_CTRL_REG6  0x25     /*Control register 6*/
-  #define H3LIS200DL_REG_STATUS_REG 0x27     /*Status register*/
+  #define LIS331HH_REG_CARD_ID    0x0F     /*Chip id*/
+  #define LIS331HH_REG_CTRL_REG1  0x20     /*Control register 1*/
+  #define LIS331HH_REG_CTRL_REG4  0x23     /*Control register 4*/
+  #define LIS331HH_REG_CTRL_REG2  0x21     /*Control register 2*/
+  #define LIS331HH_REG_CTRL_REG3  0x22     /*Control register 3*/
+  #define LIS331HH_REG_CTRL_REG5  0x24     /*Control register 5*/
+  #define LIS331HH_REG_CTRL_REG6  0x25     /*Control register 6*/
+  #define LIS331HH_REG_STATUS_REG 0x27     /*Status register*/
   #define LIS331HH_REG_OUT_X_L      0x28     /*The low order of the X-axis acceleration register*/
   #define LIS331HH_REG_OUT_X_H      0x29     /*The high point of the X-axis acceleration register*/
   #define LIS331HH_REG_OUT_Y_L      0x2A     /*The low order of the Y-axis acceleration register*/
   #define LIS331HH_REG_OUT_Y_H      0x2B     /*The high point of the Y-axis acceleration register*/
   #define LIS331HH_REG_OUT_Z_L      0x2C     /*The low order of the Z-axis acceleration register*/
   #define LIS331HH_REG_OUT_Z_H      0x2D     /*The high point of the Z-axis acceleration register*/
-  #define H3LIS200DL_REG_INT1_THS   0x32     /*Interrupt source 1 threshold*/
-  #define H3LIS200DL_REG_INT2_THS   0x36     /*Interrupt source 2 threshold*/
-  #define H3LIS200DL_REG_INT1_CFG   0x30     /*Interrupt source 1 configuration register*/
-  #define H3LIS200DL_REG_INT2_CFG   0x34     /*Interrupt source 2 configuration register*/
-  #define H3LIS200DL_REG_INT1_SRC   0x31     /*Interrupt source 1 status register*/
-  #define H3LIS200DL_REG_INT2_SRC   0x35     /*Interrupt source 2 status register*/
+  #define LIS331HH_REG_INT1_THS   0x32     /*Interrupt source 1 threshold*/
+  #define LIS331HH_REG_INT2_THS   0x36     /*Interrupt source 2 threshold*/
+  #define LIS331HH_REG_INT1_CFG   0x30     /*Interrupt source 1 configuration register*/
+  #define LIS331HH_REG_INT2_CFG   0x34     /*Interrupt source 2 configuration register*/
+  #define LIS331HH_REG_INT1_SRC   0x31     /*Interrupt source 1 status register*/
+  #define LIS331HH_REG_INT2_SRC   0x35     /*Interrupt source 2 status register*/
 
 public:
 
 /**
   Power mode selection, determine the frequency of data collection
+  Represents the number of data collected per second
 */
 typedef enum{
    ePowerDown = 0,
-   eLowPower_halfHZ,
+   eLowPower_halfHZ,/*0.5 hz*/
    eLowPower_1HZ,
    eLowPower_2HZ,
    eLowPower_5HZ,
@@ -79,14 +80,27 @@ typedef enum{
   Sensor range selection
 */
 typedef enum{
-  eLIS331HH_RANGE_6GA = 6,
-  eLIS331HH_RANGE_12GA = 12,
-  eLIS331HH_RANGE_24GA = 24
+  eLis331hhRange_6g = 6,/**<±6g>*/
+  eLis331hhRange_12g = 12,/**<±12g>*/
+  eLis331hhRange_24g = 24/**<±24g>*/
 }eRange_t;
 
-/**
-  Filtering mode
-*/
+/*!     High-pass filter cut-off frequency configuration
+ * ---------------------------------------------------------------------------------------
+ * |-------------------------------------------------------------|
+ * |                |    ft [Hz]      |        ft [Hz]       |       ft [Hz]        |        ft [Hz]        |
+ * |   mode         |Data rate = 50 Hz|   Data rate = 100 Hz |  Data rate = 400 Hz  |   Data rate = 1000 Hz |
+ * |--------------------------------------------------------------------------------------------------------|
+ * |  eCutoffMode1  |     1           |         2            |            8         |             20        |
+ * |--------------------------------------------------------------------------------------------------------|
+ * |  eCutoffMode1  |    0.5          |         1            |            4         |             10        |
+ * |--------------------------------------------------------------------------------------------------------|
+ * |  eCutoffMode1  |    0.25         |         0.5          |            2         |             5         |
+ * |--------------------------------------------------------------------------------------------------------|
+ * |  eCutoffMode1  |    0.125        |         0.25         |            1         |             2.5       |
+ * |--------------------------------------------------------------------------------------------------------|
+ * |--------------------------------------------------------------------------------------------------------|
+ */
 typedef enum{
   eCutoffMode1 = 0,
   eCutoffMode2,
@@ -131,30 +145,110 @@ public:
    * @return Return 0 indicates a successful initialization, while other values indicates failure and return to error code.
    */
   int begin(void);
+ 
+  /**
+   * @brief Get chip id
+   * @return Returns the eight-digit serial number
+   */
   uint8_t getID();
-  void enableXYZ();
+  
+  /**
+   * @brief Enable interrupt
+   * @param source:Interrupt pin selection
+   * @param event:Interrupt event selection
+   */
   void enableInterruptEvent(eInterruptSource_t source, eInterruptEvent_t event);
+  
+  /**
+   * @brief Set the measurement range
+   * @param range:Range(g)
+                  eLis331hhRange_6g = ±6
+                  eLis331hhRange_12g = ±12g
+                  eLis331hhRange_24g = ±24g
+   */
   void setRange(eRange_t range);
+  
+  /**
+   * @brief Set data measurement rate
+   * @param range:rate(g)
+   */
   void setAcquireRate(ePowerMode_t rate);
+  
+  /**
+   * @brief Set data filtering mode
+   * @param mode:Four modes
+                 eCutoffMode1 = 0,
+                 eCutoffMode2,
+                 eCutoffMode3,
+                 eCutoffMode4,
+                 eShutDown,
+   */
   void setHFilterMode(eHighPassFilter_t mode);
-  void setIntOneTh(uint8_t threshold);//0 - 100 / 0 - 200 
-  void setIntTwoTh(uint8_t threshold);//0 - 100 / 0 - 200 
-  int readACCFromX();
-  int readACCFromY();
-  int readACCFromZ();
+
+  /**
+   * @brief Set the threshold of interrupt source 1 interrupt
+   * @param threshold:Threshold(g)
+   */
+  void setIntOneTh(uint8_t threshold);
+  
+  /**
+   * @brief Set interrupt source 2 interrupt generation threshold
+   * @param threshold:Threshold(g)
+   */
+  void setIntTwoTh(uint8_t threshold);
+  
+  /**
+   * @brief Get the acceleration in the three directions of xyz
+   * @return Three-axis acceleration 
+             acceleration_x;
+             acceleration_y;
+             acceleration_z;
+   */
   sAccel_t getAcceFromXYZ();
+
+  /**
+   * @brief Enable sleep wake function
+   * @param enable:true\false
+   * @return 0
+   */
   int enableSleep(bool enable);
-  /*
-  void setInt1PadSource(eInterruptSource_t source);
-  void setInt2PadSource(eInterruptSource_t source);
-  */
+
+  /**
+   * @brief Check whether the interrupt event'source' is generated in interrupt 1
+   * @param source:Interrupt event
+                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                   eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                   eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+   * @return true ：produce
+             false：Interrupt event
+   */
   bool getInt1Event(eInterruptEvent_t source);
+  
+  /**
+   * @brief Check whether the interrupt event'source' is generated in interrupt 2
+   * @param source:Interrupt event
+                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                   eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                   eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+   * @return true ：produce
+             false：Interrupt event
+   */
   bool getInt2Event(eInterruptEvent_t source);
   
 protected:
   uint8_t _interface = 0;
   uint8_t reset = 0;
-  eRange_t _range = eLIS331HH_RANGE_6GA;
+  void enableXYZ();
+  int readACCFromX();
+  int readACCFromY();
+  int readACCFromZ();
+  eRange_t _range = eLis331hhRange_6g;
   virtual uint8_t readReg(uint8_t reg,uint8_t * pBuf ,size_t size) = 0;
   /**
    * @brief Write command into sensor chip 
@@ -202,6 +296,12 @@ private:
 class DFRobot_LIS331HH_SPI : public DFRobot_LIS331HH{
 
 public:
+
+  /*!
+   * @brief Constructor 
+   * @param cs : Chip selection pinChip selection pin
+   * @param spi :SPI controller
+   */
   DFRobot_LIS331HH_SPI(uint8_t cs,SPIClass *spi=&SPI);
   
   /**
