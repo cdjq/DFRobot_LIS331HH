@@ -1,23 +1,31 @@
-# HX711-Arduino
-The H3LIS200DL is a low-power high performance 3-axis linear accelerometer <br>
-belonging to the “nano” family, with digital I2C/SPI <br>
-serial interface standard output. <br>
-The device features ultra-low-power operational <br>
+# DFRobot_LIS331HH
+The LIS331HH is an ultra low-power high <br>
+performance high full-scale three axes linear <br>
+accelerometer belonging to the “nano” family, with <br>
+digital I2C/SPI serial interface standard output. <br>
+The device features ultra low-power operational <br>
 modes that allow advanced power saving and <br>
-smart sleep-to-wakeup functions.<br>
-The H3LIS200DL has dynamically user selectable full scales of ±100g/±200g and is <br>
-capable of measuring accelerations with output <br>
-data rates from 0.5 Hz to 1 kHz.<br>
-The H3LIS200DL is available in a small thin <br>
-plastic land grid array package (LGA) and is <br>
+smart sleep to wake-up functions. <br>
+The LIS331HH has dynamically user selectable <br>
+full scales of ±6g/±12g/±24g and it is capable of <br>
+measuring accelerations with output data rates <br>
+from 0.5 Hz to 1 kHz. The self-test capability <br>
+allows the user to check the functioning of the <br>
+sensor in the final application.<br>
+The device contains 2 indipendent interrupt <br>
+engines able to recognize dedicated inertial <br>
+events.<br>
+Thresholds and timing of interrupt generators are <br>
+programmable by the end user on the fly.<br>
+The LIS331HH is available in small thin plastic <br>
+land grid array package (LGA) and it is <br>
 guaranteed to operate over an extended <br>
 temperature range from -40 °C to +85 °C.<br>
 
-
-## DFRobot_H3LIS200DL Library for Arduino
+## DFRobot_LIS331HH Library for Arduino
 ---------------------------------------------------------
 
-Provide an Arduino library to get weight by reading data from HX711.
+Provide an Arduino library to get Three-axis acceleration by reading data from LIS331HH.
 
 ## Table of Contents
 
@@ -30,7 +38,7 @@ Provide an Arduino library to get weight by reading data from HX711.
 
 ## Summary
 
-Provide an Arduino library to get Three-axis acceleration by reading data from H3LIS200DL.
+Provide an Arduino library to get Three-axis acceleration by reading data from LIS331HH.
 
 ## Installation
 
@@ -39,9 +47,9 @@ To use this library, first download the library file, paste it into the \Arduino
 ## Methods
 
 ```C++
-#include <DFRobot_H3LIS200DL.h>
-
-  DFRobot_H3LIS200DL();
+#include <DFRobot_LIS331HH.h>
+  DFRobot_LIS331HH();
+    
   /**
    * @brief Initialize the function
    * @return Return 0 indicates a successful initialization, while other values indicates failure and return to error code.
@@ -64,8 +72,9 @@ To use this library, first download the library file, paste it into the \Arduino
   /**
    * @brief Set the measurement range
    * @param range:Range(g)
-            eOnehundred =  ±100g
-            eTwohundred = ±200g
+                  eLis331hhRange_6g = ±6
+                  eLis331hhRange_12g = ±12g
+                  eLis331hhRange_24g = ±24g
    */
   void setRange(eRange_t range);
   
@@ -90,20 +99,13 @@ To use this library, first download the library file, paste it into the \Arduino
    * @brief Set the threshold of interrupt source 1 interrupt
    * @param threshold:Threshold(g)
    */
-  void setIntOneTh(uint8_t threshold);//0 - 100 / 0 - 200 
-
+  void setIntOneTh(uint8_t threshold);
+  
   /**
    * @brief Set interrupt source 2 interrupt generation threshold
    * @param threshold:Threshold(g)
    */
-  void setIntTwoTh(uint8_t threshold);//0 - 100 / 0 - 200 
-
-  /**
-   * @brief Enable sleep wake function
-   * @param enable:true\false
-   * @return 0
-   */
-  int enableSleep(bool enable);
+  void setIntTwoTh(uint8_t threshold);
   
   /**
    * @brief Get the acceleration in the three directions of xyz
@@ -115,30 +117,37 @@ To use this library, first download the library file, paste it into the \Arduino
   sAccel_t getAcceFromXYZ();
 
   /**
-   * @brief Check whether the interrupt event'source' is generated in interrupt 1
-   * @param source:中断事件
-                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
-                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
-                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
-                   eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
-                   eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
-                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
-   * @return true ：产生
-             false：未产生
+   * @brief Enable sleep wake function
+   * @param enable:true\false
+   * @return 0
    */
-  bool getInt1Event(eInterruptEvent_t source);
+  int enableSleep(bool enable);
 
   /**
-   * @brief Check whether the interrupt event'source' is generated in interrupt 2
-   * @param source:中断事件
+   * @brief Check whether the interrupt event'source' is generated in interrupt 1
+   * @param source:Interrupt event
                    eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
                    eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
                    eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
                    eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
                    eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
                    eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
-   * @return true ：产生
-             false：未产生
+   * @return true ：produce
+             false：Interrupt event
+   */
+  bool getInt1Event(eInterruptEvent_t source);
+  
+  /**
+   * @brief Check whether the interrupt event'source' is generated in interrupt 2
+   * @param source:Interrupt event
+                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                   eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                   eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+   * @return true ：produce
+             false：Interrupt event
    */
   bool getInt2Event(eInterruptEvent_t source);
 
