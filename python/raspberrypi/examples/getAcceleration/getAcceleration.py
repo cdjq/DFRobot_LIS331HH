@@ -1,49 +1,64 @@
 # -*- coding:utf-8 -*-
 """
-   @file getAcceleration.ino
-   @brief 获取 x,y,z方向上的加速度
+   @file getAcceleration.py
+   @brief Get the acceleration in x, y, z directions
    @copyright  Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
    @licence     The MIT License (MIT)
    @author [fengli](li.feng@dfrobot.com)
    @version  V1.0
    @date  2021-01-16
    @get from https://www.dfrobot.com
-   @https://github.com/DFRobot/DFRobot_H3LIS200DL
+   @https://github.com/DFRobot/DFRobot_LIS331HH
 """
 
 import sys
 sys.path.append("../..") # set system path to top
 
-from DFRobot_H3LIS200DL import *
+from DFRobot_LIS331HH import *
 import time
 
 # peripheral params
-RASPBERRY_SPI_BUS = 0
-RASPBERRY_PIN_CS = 27
+RASPBERRY_PIN_CS = 27              #Chip selection pin
 I2C_MODE         = 0x01            # default use I2C1
 ADDRESS_0        = 0x19
 
-#acce = DFRobot_H3LIS200DL_SPI(RASPBERRY_SPI_BUS,RASPBERRY_PIN_CS)
+acce = DFRobot_LIS331HH_SPI(RASPBERRY_PIN_CS)
 #
-acce = DFRobot_H3LIS200DL_I2C(I2C_MODE ,ADDRESS_0)
+#acce = DFRobot_LIS331HH_I2C(I2C_MODE ,ADDRESS_0)
 # clear screen
+
 acce.begin()
 print("chip id :")
-#获取芯片id
 print(acce.getID())
-#time.sleep(1)
-#设置测量量程
+
+'''
+    set range:Range(g)
+        E_LIS331HH_RANGE_6G = 6,#/**<±6G>*/
+        E_LIS331HH_RANGE_12G = 12,#/**<±12G>*/
+        E_LIS331HH_RANGE_24G = 24#/**<±24G>*/
+'''
 acce.setRange(acce.E_ONE_HUNDRED)
-#设置数据采集频率
+
+'''
+    Set data measurement rate：
+           E_POWER_DOWN 
+           E_LOWPOWER_HALFHZ 
+           E_LOWPOWER_1HZ 
+           E_LOWPOWER_2HZ 
+           E_LOWPOWER_5HZ 
+           E_LOWPOWER_10HZ 
+           E_NORMAL_50HZ 
+           E_NORMAL_100HZ 
+           E_NORMAL_400HZ 
+           E_NORMAL_1000HZ 
+'''
 acce.setAcquireRate(acce.E_NORMAL_50HZ)
-time.sleep(1000)
+time.sleep(0.1)
 
 while True:
-    #获取三个方向上的加速度数据
-    x = acce.readACCFromX()
-    y = acce.readACCFromy()
-    z = acce.readACCFromZ()
-    time.sleep(300)
+    #Get the acceleration in the three directions of xyz
+    x,y,z = acce.readAcceFromXYZ()
+    time.sleep(1)
     
     
-    print("Acceleration [X = %.2f mg,Y = %.2f mg,Z = %.2f mg]"%(x,y,z))
+    print("Acceleration [X = %.2d g,Y = %.2d g,Z = %.2d g]"%(x,y,z))

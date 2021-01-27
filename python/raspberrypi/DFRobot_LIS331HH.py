@@ -8,84 +8,30 @@
   @version  V1.0
   @date  2020-12-23
   @get from https://www.dfrobot.com
-  @url https://github.com/DFRobot/DFRobot_LIS331HH
+  @url https://github.com/DFRobot/DFRobot_H3LIS200DL
 """
+import struct
 import serial
 import time
 import smbus
 import spidev
+from gpio import GPIO
+import numpy as np
 
-
-LIS331HH_I2C_ADDR = 0x19        #/*sensor IIC address*/
-LIS331HH_REG_CARD_ID = 0x0F     #/*芯片id*/
-LIS331HH_REG_CTRL_REG1 = 0x20     #/*控制寄存器1*/
-LIS331HH_REG_CTRL_REG4 = 0x23     #/*控制寄存器4*/
-LIS331HH_REG_CTRL_REG2 = 0x21     #/*控制寄存器2*/
-LIS331HH_REG_CTRL_REG3 = 0x22     #/*中断控制寄存器*/
-LIS331HH_REG_CTRL_REG5 = 0x24     #/*控制寄存器5*/
-LIS331HH_REG_CTRL_REG6 = 0x25     #/*控制寄存器6*/
-LIS331HH_REG_STATUS_REG = 0x27     #/*状态寄存器*/
-LIS331HH_REG_OUT_X_L = 0x28     #/*控制寄存器1*/
-LIS331HH_REG_OUT_X_H = 0x29     #/*控制寄存器1*/
-LIS331HH_REG_OUT_Y_L = 0x2A     #/*控制寄存器1*/
-LIS331HH_REG_OUT_Y_H = 0x2B     #/*控制寄存器1*/
-LIS331HH_REG_OUT_Z_L = 0x2C     #/*控制寄存器1*/
-LIS331HH_REG_OUT_Z_H = 0x2D     #/*控制寄存器1*/
-LIS331HH_REG_INT1_THS = 0x32     #/*中断源1阈值*/
-LIS331HH_REG_INT2_THS = 0x36     #/*中断源2阈值*/
-LIS331HH_REG_INT1_CFG = 0x30     #/*中断源1配置寄存器*/
-LIS331HH_REG_INT2_CFG = 0x34     #/*中断源2配置寄存器*/
-LIS331HH_REG_INT1_SRC = 0x31     #/*中断源1状态寄存器*/
-LIS331HH_REG_INT2_SRC = 0x35     #/*中断源2状态寄存器*/
 I2C_MODE                  = 0x01
 SPI_MODE                 = 0x02
-E_POWER_DOWN = 0
-E_LOWPOWER_HALFHZ = 1 
-E_LOWPOWER_1HZ = 2
-E_LOWPOWER_2HZ = 3
-E_LOWPOWER_5HZ = 4
-E_LOWPOWER_10HZ = 5 
-E_NORMAL_50HZ = 6
-E_NORMAL_100HZ = 7
-E_NORMAL_400HZ = 8
-E_NORMAL_1000HZ = 9
-
-ELIS331HH_RANGE_6GA = 6,
-ELIS331HH_RANGE_12GA = 12,
-ELIS331HH_RANGE_24GA = 24
-
-E_CUTOFF_MODE1 = 0
-E_CUTOFF_MODE2 = 1
-E_CUTOFF_MODE3 = 2
-E_CUTOFF_MODE4 = 3
-E_SHUTDOWN = 4,
-
-E_X_LOWTHAN_TH = 0
-E_X_HIGHERTHAN_TH  = 1
-E_Y_LOWTHAN_TH = 2
-E_Y_HIGHERTHAN_TH = 3
-E_Z_LOWTHAN_TH = 4
-E_Z_HIGHERTHAN_TH = 5
-E_EVENT_ERROR = 6
-
-eINT1 = 0,
-eINT2 = 1,
-ERROR                     = -1
-
 class SPI:
 
   MODE_1 = 1
   MODE_2 = 2
   MODE_3 = 3
   MODE_4 = 4
-
-  def __init__(self, bus, dev, speed = 3900000, mode = MODE_4):
+  def __init__(self, bus, dev, speed = 100000, mode = MODE_4):
     self._bus = spidev.SpiDev()
     self._bus.open(0, 0)
     self._bus.no_cs = True
     self._bus.max_speed_hz = speed
-    self._bus.threewire  = True
-
+    #self._bus.threewire  = True
   def transfer(self, buf):
     if len(buf):
       return self._bus.writebytes(buf)
@@ -94,55 +40,169 @@ class SPI:
     return self._bus.readbytes(cmd)
   
 class DFRobot_LIS331HH(object):
+
+
+  LIS331HH_I2C_ADDR = 0x19       #
+  LIS331HH_REG_CARD_ID = 0x0F     #/*Chip id*/
+  LIS331HH_REG_CTRL_REG1 = 0x20     #/*Control register 1*/
+  LIS331HH_REG_CTRL_REG4 = 0x23     #/*Control register 4*/
+  LIS331HH_REG_CTRL_REG2 = 0x21     #/*Control register 2*/
+  LIS331HH_REG_CTRL_REG3 = 0x22     #/*Control register 3*/
+  LIS331HH_REG_CTRL_REG5 = 0x24     #/*Control register 5*/
+  LIS331HH_REG_CTRL_REG6 = 0x25     #/*Control register 6*/
+  LIS331HH_REG_STATUS_REG = 0x27     #/*Status register*/
+  LIS331HH_REG_OUT_X_L = 0x28     #/*Acceleration register*/
+  LIS331HH_REG_OUT_X_H  =    0x29     #/*The high point of the X-axis acceleration register*/
+  LIS331HH_REG_OUT_Y_L    =  0x2A     #/*The low order of the Y-axis acceleration register*/
+  LIS331HH_REG_OUT_Y_H     = 0x2B     #/*The high point of the Y-axis acceleration register*/
+  LIS331HH_REG_OUT_Z_L    =  0x2C     #/*The low order of the Z-axis acceleration register*/
+  LIS331HH_REG_OUT_Z_H    =  0x2D     #/*The high point of the Z-axis acceleration register*/
+  LIS331HH_REG_OUT_Y = 0x2B     #/*Acceleration register*/
+  LIS331HH_REG_OUT_Z = 0x2D     # /*Acceleration register*/
+  LIS331HH_REG_INT1_THS = 0x32     #/*Interrupt source 1 threshold*/
+  LIS331HH_REG_INT2_THS = 0x36     #/*Interrupt source 2 threshold*/
+  LIS331HH_REG_INT1_CFG = 0x30     #/*Interrupt source 1 configuration register*/
+  LIS331HH_REG_INT2_CFG = 0x34     #/*Interrupt source 2 configuration register*/
+  LIS331HH_REG_INT1_SRC = 0x31     #/*Interrupt source 1 status register*/
+  LIS331HH_REG_INT2_SRC = 0x35     #/*Interrupt source 2 status register*/
   __m_flag   = 0                # mode flag
   __count    = 0                # acquisition count    
   __txbuf        = [0]          # i2c send buffer
-  __alcoholdata  = [0]*101      # alcohol data
   __uart_i2c     =  0
   __range = 100
+  __reset = 0
+  '''
+    Power mode selection, determine the frequency of data collection
+    Represents the number of data collected per second
+  '''
+  E_POWER_DOWN = 0
+  E_LOWPOWER_HALFHZ = 1 
+  E_LOWPOWER_1HZ = 2
+  E_LOWPOWER_2HZ = 3
+  E_LOWPOWER_5HZ = 4
+  E_LOWPOWER_10HZ = 5 
+  E_NORMAL_50HZ = 6
+  E_NORMAL_100HZ = 7
+  E_NORMAL_400HZ = 8
+  E_NORMAL_1000HZ = 9
+
+#Sensor range selection
+  E_LIS331HH_RANGE_6G = 6#/**<±6G>*/
+  E_LIS331HH_RANGE_12G = 12,#/**<±12G>*/
+  E_LIS331HH_RANGE_24G = 24#/**<±24G>*/
+
+  '''
+     High-pass filter cut-off frequency configuration
+---------------------------------------------------------------------------------------
+|-------------------------------------------------------------|
+|                |    ft [Hz]      |        ft [Hz]       |       ft [Hz]        |        ft [Hz]        |
+|   mode         |Data rate = 50 Hz|   Data rate = 100 Hz |  Data rate = 400 Hz  |   Data rate = 1000 Hz |
+|--------------------------------------------------------------------------------------------------------|
+|  eCutoffMode1  |     1           |         2            |            8         |             20        |
+|--------------------------------------------------------------------------------------------------------|
+|  eCutoffMode1  |    0.5          |         1            |            4         |             10        |
+|--------------------------------------------------------------------------------------------------------|
+|  eCutoffMode1  |    0.25         |         0.5          |            2         |             5         |
+|--------------------------------------------------------------------------------------------------------|
+|  eCutoffMode1  |    0.125        |         0.25         |            1         |             2.5       |
+|--------------------------------------------------------------------------------------------------------|
+|--------------------------------------------------------------------------------------------------------|
+  '''
+  E_CUTOFF_MODE1 = 0
+  E_CUTOFF_MODE2 = 1
+  E_CUTOFF_MODE3 = 2
+  E_CUTOFF_MODE4 = 3
+  E_SHUTDOWN = 4
+  
+#Interrupt event
+  E_X_LOWTHAN_TH = 0#/**<The acceleration in the x direction is less than the threshold>*/
+  E_X_HIGHERTHAN_TH  = 1#/**<The acceleration in the x direction is greater than the threshold>*/
+  E_Y_LOWTHAN_TH = 2#/**<The acceleration in the y direction is less than the threshold>*/
+  E_Y_HIGHERTHAN_TH = 3#/**<The acceleration in the y direction is greater than the threshold>*/
+  E_Z_LOWTHAN_TH = 4#/**<The acceleration in the z direction is less than the threshold>*/
+  E_Z_HIGHERTHAN_TH = 5#/**<The acceleration in the z direction is greater than the threshold>*/
+  E_EVENT_ERROR = 6#/**< No event>*/
+
+#Interrupt pin selection
+  eINT1 = 0,#/**<int1 >*/
+  eINT2 = 1,#/**<int2 >*/
+  
+  ERROR                     = -1
   def __init__(self ,bus ,Baud):
+    __reset = 1
     if bus != 0:
       self.i2cbus = smbus.SMBus(bus)
       self.__uart_i2c = I2C_MODE;
     else:
-      #self.ser = serial.Serial("/dev/ttyAMA0" ,baudrate=Baud,stopbits=1, timeout=0.5)
-      #self.__uart_i2c = UART_MODE;
+      self.__uart_i2c = SPI_MODE
 
 
 
   '''
-    @brief set the mode to read the data
-    @param mode MEASURE_MODE_AUTOMATIC or MEASURE_MODE_PASSIVE
+    @brief Initialize the function
+    @return Return 0 indicates a successful initialization, while other values indicates failure and return to error code.
   '''
   def begin(self):
-    identifier = self.read_reg(self.LIS331HH_REG_CARD_ID)
+    identifier = 0 
+    if(self.__uart_i2c == SPI_MODE):
+      identifier = self.read_reg(self.LIS331HH_REG_CARD_ID + 0x80)  
+    else:
+      identifier = self.read_reg(self.LIS331HH_REG_CARD_ID)
+    #print(identifier)
     if identifier == 0x32:
-      print("identifier = :")
-      print(identifier)
+      #print("identifier = :")
+      #print(identifier)
       return 0
-    else 
+    else:
       return 1
-  
+      
+  '''
+    @brief Get chip id
+    @return Returns the eight-digit serial number
+  '''
   def getID(self):
-    identifier = self.read_reg(self.LIS331HH_REG_CARD_ID)
+    identifier = 0 
+    if(self.__uart_i2c == SPI_MODE):
+      identifier = self.read_reg(self.LIS331HH_REG_CARD_ID + 0x80)  
+    else:
+      identifier = self.read_reg(self.LIS331HH_REG_CARD_ID)
     return identifier
-  def setRange(self,range_r):
-    reg = self.read_reg(self.LIS331HH_REG_CTRL_REG4)
 
-     
-    if range_r == self.eLIS331HH_RANGE_6GA:
-       reg = reg&(~(3<<4));
-    elif range_r == self.eLIS331HH_RANGE_12GA:
-       reg = reg&(~(3<<4));
-       reg = reg | 0x01;
-    elif range_r == self.eLIS331HH_RANGE_24GA:
-       reg = reg&(~(3<<4));
-       reg = reg | 0x03;
+  '''
+    @brief Set the measurement range
+    @param range:Range(g)
+           eOnehundred =  ±100g
+           eTwohundred = ±200g
+  '''
+  def setRange(self,range_r):
+    regester = self.LIS331HH_REG_CTRL_REG4;
+    if(self.__uart_i2c == SPI_MODE):
+      regester  = self.LIS331HH_REG_CTRL_REG4 | 0x80;
+    reg = self.read_reg(regester)
+    self.__range = range_r
+    if range_r == self.E_LIS331HH_RANGE_6G:
+     reg = reg&(~(3<<4));
+    elif range_r == self.E_LIS331HH_RANGE_12G:
+     reg = reg&(~(3<<4));
+     reg = reg | (0x01<<4);
+    elif range_r == self.E_LIS331HH_RANGE_24G:
+     reg = reg&(~(3<<4));
+     reg = reg | (0x03<<4);
+    #print(reg)
     self.write_reg(self.LIS331HH_REG_CTRL_REG4,reg)
 
-
+  
+  '''
+    @brief Set data measurement rate
+    @param range:rate(g)
+  '''
   def setAcquireRate(self, rate):
-    reg = self.read_reg(self.LIS331HH_REG_CTRL_REG1)
+    regester = self.LIS331HH_REG_CTRL_REG1;
+    if(self.__uart_i2c == SPI_MODE):
+      regester  = self.LIS331HH_REG_CTRL_REG1 | 0x80;
+    
+    reg = self.read_reg(regester)
+    #print(reg);
     if rate == self.E_POWER_DOWN:
       reg = reg & (~(0x7 << 5))
     elif rate == self.E_LOWPOWER_HALFHZ:
@@ -181,31 +241,46 @@ class DFRobot_LIS331HH(object):
       reg = reg | (0x03 << 3)
     #print(reg);
     self.write_reg(self.LIS331HH_REG_CTRL_REG1,reg);
-  
-  
-  
+
+  '''
+    @brief Set the threshold of interrupt source 1 interrupt
+    @param threshold:Threshold(g)
+  '''
   def setIntOneTh(self,threshold):
     reg = (threshold * 128)/self.__range
     #print(reg)
     self.write_reg(self.LIS331HH_REG_INT1_THS,reg)
+
+
   '''
-    @brief get the alcohol data ,units of PPM
-    @param collectnum Collect the number
-    @return  alcohol concentration, (units PPM)
+    @brief Set interrupt source 2 interrupt generation threshold
+    @param threshold:Threshold(g)
   '''
   def setIntTwoTh(self,threshold):
     reg = (threshold * 128)/self.__range
     #print(reg)
     self.write_reg(self.LIS331HH_REG_INT2_THS,reg)
-
-
+  
+  '''
+    @brief Enable interrupt
+    @param source:Interrupt pin selection
+    @param event:Interrupt event selection
+  '''
   def enableInterruptEvent(self,source,event):
     reg = 0
-    if source == self.eINT1:
-      reg = self.read_reg(self.LIS331HH_REG_INT1_CFG)
-    else:
-      reg = self.read_reg(self.LIS331HH_REG_INT2_CFG)
+    regester1 = self.LIS331HH_REG_INT1_CFG;
+    regester2 = self.LIS331HH_REG_INT2_CFG;
+    if(self.__uart_i2c == SPI_MODE):
+      regester1 = self.LIS331HH_REG_INT1_CFG | 0x80;
+      regester2 = self.LIS331HH_REG_INT2_CFG | 0x80;
     
+    if source == self.eINT1:
+      reg = self.read_reg(regester1)
+    else:
+      reg = self.read_reg(regester2)
+    if self.__reset == 1:
+       reg = 0
+       self.__reset = 0
     if event == self.E_X_LOWTHAN_TH:
       reg = reg | 0x01
     elif event == self.E_X_HIGHERTHAN_TH:
@@ -224,40 +299,88 @@ class DFRobot_LIS331HH(object):
       self.write_reg(self.LIS331HH_REG_INT1_CFG,reg)
     else:
       self.write_reg(self.LIS331HH_REG_INT2_CFG,reg)
-  def getInterruptEvent(self,source):
-    reg = 0
-    if source == self.eINT1:
-      reg = self.read_reg(self.LIS331HH_REG_INT1_SRC)
+
+  '''
+    @brief Check whether the interrupt event'source' is generated in interrupt 1
+    @param source:Interrupt event
+                  eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                  eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                  eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                  eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                  eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                  eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+    @return true ：produce
+            false：Interrupt event
+  '''
+  def getInt1Event(self,source):
+    regester = self.LIS331HH_REG_INT1_SRC;
+    if(self.__uart_i2c == SPI_MODE):
+      regester  = self.LIS331HH_REG_INT1_SRC | 0x80;
+    reg = self.read_reg(regester)
+      #print(reg & (1 << source))
+      #print(1 << source)
+    if (reg & (1 << source)) >= 1:
+    #     print("true")
+         return True
     else:
-      reg = self.read_reg(self.LIS331HH_REG_INT2_SRC)
-    if(reg & 0x41) > 0x40 :
-      return self.E_X_LOWTHAN_TH
-    elif(reg & 0x42) > 0x40:
-      return self.E_X_HIGHERTHAN_TH
-    elif(reg & 0x44) > 0x40:
-     return self.E_Y_LOWTHAN_TH
-    elif(reg & 0x48) > 0x40:
-     return self.E_Y_HIGHERTHAN_TH
-    elif(reg & 0x50) > 0x40:
-     return self.E_Z_LOWTHAN_TH
-    elif(reg & 0x60) > 0x40:
-     return self.E_Z_HIGHERTHAN_TH
-    return self.E_EVENT_ERROR
-  
+     #    print("false")
+         return False
+         
+  '''
+    @brief Check whether the interrupt event'source' is generated in interrupt 2
+    @param source:Interrupt event
+                  eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                  eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                  eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
+                  eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
+                  eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
+                  eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+    @return true ：produce
+            false：Interrupt event
+  '''
+  def getInt2Event(self,source):
+    regester = self.LIS331HH_REG_INT2_SRC;
+    if(self.__uart_i2c == SPI_MODE):
+      regester  = self.LIS331HH_REG_INT2_SRC | 0x80;
+    reg = self.read_reg(regester)
+      #print(reg & (1 << source))
+      #print(1 << source)
+    if (reg & (1 << source)) >= 1:
+    #     print("true")
+         return True
+    else:
+     #    print("false")
+         return False
+  '''
+    @brief Enable sleep wake function
+    @param enable:true\false
+    @return 0
+  '''
   def enableSleep(self, enable):
     reg = 0
     if enable == True:
       reg = 3
-    else
+    else:
       reg = 0
     self.write_reg(self.LIS331HH_REG_CTRL_REG5,reg)
-    
     return 0
 
-
+  
+  
+  '''
+    @brief Set data filtering mode
+    @param mode:Four modes
+              eCutoffMode1 = 0,
+              eCutoffMode2,
+              eCutoffMode3,
+              eCutoffMode4,
+              eShutDown,
+  '''
   def setHFilterMode(self,mode):
-    
-    reg = self.read_reg(self.LIS331HH_REG_CTRL_REG1)
+    regester = self.LIS331HH_REG_CTRL_REG2;
+    if(self.__uart_i2c == SPI_MODE):
+      regester  = self.LIS331HH_REG_CTRL_REG2 | 0x80; 
+    reg = self.read_reg(regester)
     if mode == self.E_SHUTDOWN:
       reg = reg & (~0x10)
       return 0
@@ -265,49 +388,49 @@ class DFRobot_LIS331HH(object):
       reg = reg | 0x10
     reg = reg & (~3)
     reg = reg | mode
-    #print(reg)
-    self.write_reg(self.LIS331HH_REG_CTRL_REG1,reg)
+    self.write_reg(self.LIS331HH_REG_CTRL_REG2,reg)
 
-
-  def enableXYZ(self):
-    reg = self.read_reg(self.LIS331HH_REG_CTRL_REG1)
-    reg = reg | 0x07
-    self.write_reg(self.LIS331HH_REG_CTRL_REG1,reg)
-  
-  
-  def readACCFromX(self):
-
-    ACCX_L = 0;
-    ACCX_H = 0;
-    reg = self.read_reg(self.LIS331HH_REG_STATUS_REG)
+  '''
+    @brief Get the acceleration in the three directions of xyz
+    @return Three-axis acceleration 
+            acceleration_x;
+            acceleration_y;
+            acceleration_z;
+  '''
+  def readAcceFromXYZ(self):
+    regester = self.LIS331HH_REG_STATUS_REG
+    if(self.__uart_i2c == SPI_MODE):
+      regester  = self.LIS331HH_REG_STATUS_REG | 0x80; 
+    reg = self.read_reg(regester)
+     # reg = 1
+    data = [0,0,0,0,0,0,0]
+    offset = 0
     if(reg & 0x01) == 1:
-       ACCX_L = self.read_reg(self.LIS331HH_REG_OUT_X_L)
-       ACCX_H = self.read_reg(self.LIS331HH_REG_OUT_X_H)
-    else:
-       return 0
-       
-  def readACCFromX(self):
+        if(self.__uart_i2c == SPI_MODE):
+		       offset = 0x80
+     
+        data[0] = self.read_reg(self.LIS331HH_REG_OUT_X_L+offset)
+        data[1] = self.read_reg(self.LIS331HH_REG_OUT_X_H+offset)
+        data[2] = self.read_reg(self.LIS331HH_REG_OUT_Y_L+offset)
+        data[3] = self.read_reg(self.LIS331HH_REG_OUT_Y_H+offset)
+        data[4] = self.read_reg(self.LIS331HH_REG_OUT_Z_L+offset)
+        data[5] = self.read_reg(self.LIS331HH_REG_OUT_Z_H+offset)
+        
+        data[0] = np.int8(data[0])
+        data[1] = np.int8(data[1])
+        data[2] = np.int8(data[2])
+        data[3] = np.int8(data[3])
+        data[4] = np.int8(data[4])
+        data[5] = np.int8(data[5])
 
-    ACCY_L = 0;
-    ACCY_H = 0;
-    reg = self.read_reg(self.LIS331HH_REG_STATUS_REG)
-    if(reg & 0x02) == 1:
-       ACCY_L = self.read_reg(self.LIS331HH_REG_OUT_Y_L)
-       ACCY_H = self.read_reg(self.LIS331HH_REG_OUT_Y_H)
-    else:
-       return 0
-
-  def readACCFromZ(self):
-
-    ACCZ_L = 0;
-    ACCZ_H = 0;
-    reg = self.read_reg(self.LIS331HH_REG_STATUS_REG)
-    if(reg & 0x04) == 1:
-       ACCZ_L = self.read_reg(self.LIS331HH_REG_OUT_Z_L)
-       ACCZ_H = self.read_reg(self.LIS331HH_REG_OUT_Z_H)
-    else:
-       return 0
-  
+    x = data[1]*256+data[0]
+    x = (x*1000*self.__range)/(256*128)
+    y = data[3]*256+data[2]
+    y = (y*1000*self.__range)/(256*128)
+    z = data[5]*256+data[4]
+    z = (z*1000*self.__range)/(256*128)
+      
+    return x,y,z
 '''
   @brief An example of an i2c interface module
 '''
@@ -322,38 +445,38 @@ class DFRobot_LIS331HH_I2C(DFRobot_LIS331HH):
     @param value written data
   '''
   def write_reg(self, reg, data):
-    data1 = [0]
-    data1[0] = data
-    while 1:
-      try:
-        self.i2cbus.write_i2c_block_data(self.__addr ,reg ,data1)
-        return
-      except:
-        print("please check connect!")
-        time.sleep(1)
+        data1 = [0]
+        data1[0] = data
+        self.i2cbus.write_i2c_block_data(self.__addr ,reg,data1)
+        #self.i2cbus.write_byte(self.__addr ,reg)
+        #self.i2cbus.write_byte(self.__addr ,data)
+
+
+
+
   '''
     @brief read the data from the register
     @param reg register address
     @param value read data
   '''
   def read_reg(self, reg):
-    try:
-      rslt = self.i2cbus.read_i2c_block_data(self.__addr ,reg ,1)
-    except:
-      rslt = -1
+    self.i2cbus.write_byte(self.__addr,reg)
+    time.sleep(0.01)
+    rslt = self.i2cbus.read_byte(self.__addr)
+    #print(rslt)
     return rslt
 
 class DFRobot_LIS331HH_SPI(DFRobot_LIS331HH): 
 
 
-  def __init__(self ,bus,cs):
-    super(DFRobot_LIS331HH_SPI, self).__init__(0,__cs)
-    #DFRobot_H3LIS200DL.__init__(0,0)
+  def __init__(self ,cs):
+    super(DFRobot_LIS331HH_SPI, self).__init__(0,cs)
+ 
     #self._busy = GPIO(busy, GPIO.IN)
     self.__cs = GPIO(cs, GPIO.OUT)
     self.__cs.setOut(GPIO.LOW)
-    self._spi = SPI(bus, 0)
-    self.write_reg(LIS331HH_REG_CTRL_REG4,1);
+    self._spi = SPI(0, 0)
+
     
   '''
     @brief writes data to a register
@@ -361,14 +484,22 @@ class DFRobot_LIS331HH_SPI(DFRobot_LIS331HH):
     @param value written data
   '''
   def write_reg(self, reg, data):
-     self._spi.transfer(reg)
-     self._spi.transfer(data)
+     data1 =[reg,data]
+     self.__cs.setOut(GPIO.LOW)
+     self._spi.transfer(data1)
+     self.__cs.setOut(GPIO.HIGH)
+     #self._spi.transfer(data)
   '''
     @brief read the data from the register
     @param reg register address
     @param value read data
   '''
   def read_reg(self, reg):
-     self._spi.transfer(reg)
+     data1 =[reg]
+     self.__cs.setOut(GPIO.LOW)
+     self._spi.transfer(data1)
      time.sleep(0.01);
-     return self._spi.readData(1);
+     data = self._spi.readData(1);
+     self.__cs.setOut(GPIO.HIGH)
+     #print(data)
+     return  data[0]

@@ -353,11 +353,12 @@ DFRobot_LIS331HH::sAccel_t DFRobot_LIS331HH::getAcceFromXYZ()
      readReg(LIS331HH_REG_OUT_Z_H+offset,&sensorData[5],1);
 
 
-     long a = ((int16_t)sensorData[1])*256+(int16_t)sensorData[0];
+     long a = ((int8_t)sensorData[1])*256+(int8_t)sensorData[0];
+      //Serial.println((int8_t)sensorData[1]);
      a = (a * 1000 * (uint8_t)_range)/(256*128);
-     long b = ((int16_t)sensorData[3])*256+(int16_t)sensorData[2];
+     long b = ((int8_t)sensorData[3])*256+(int8_t)sensorData[2];
      b = (b * 1000 * (uint8_t)_range)/(256*128);
-     long c = ((int16_t)sensorData[5])*256+(int16_t)sensorData[4];
+     long c = ((int8_t)sensorData[5])*256+(int8_t)sensorData[4];
      c = (c * 1000 * (uint8_t)_range)/(256*128);
      accel.acceleration_x = a;
      accel.acceleration_y = b;
