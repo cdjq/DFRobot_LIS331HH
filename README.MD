@@ -1,4 +1,4 @@
-# HX711-Arduino
+# DFRobot_H3LIS200DL
 The H3LIS200DL is a low-power high performance 3-axis linear accelerometer <br>
 belonging to the “nano” family, with digital I2C/SPI <br>
 serial interface standard output. <br>
