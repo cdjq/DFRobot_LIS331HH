@@ -129,13 +129,13 @@ To use this library, first download the library file, paste it into the \Arduino
 
   /**
    * @brief Set the threshold of interrupt source 1 interrupt
-   * @param threshold 设置de阈值在量程之内(unit:g)
+   * @param threshold 设置的阈值在量程之内(unit:g)
    */
   void setInt1Th(uint8_t threshold);
   
   /**
    * @brief Set interrupt source 2 interrupt generation threshold
-   * @param threshold 设置de阈值在量程之内(unit:g）
+   * @param threshold 设置的阈值在量程之内(unit:g）
    */
   void setInt2Th(uint8_t threshold);
   
