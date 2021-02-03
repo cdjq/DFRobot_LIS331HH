@@ -219,7 +219,7 @@ public:
 
   /**
    * @brief Set the threshold of interrupt source 1 interrupt
-   * @param threshold 设置de阈值在量程之内(unit:g)
+   * @param threshold 设置的阈值在量程之内(unit:g)
    */
   void setInt1Th(uint8_t threshold);
   
