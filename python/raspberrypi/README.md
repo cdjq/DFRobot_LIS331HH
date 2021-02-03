@@ -1,23 +1,32 @@
 # DFRobot_H3LIS200DL
-The H3LIS200DL is a low-power high performance 3-axis linear accelerometer <br>
-belonging to the “nano” family, with digital I2C/SPI <br>
-serial interface standard output. <br>
-The device features ultra-low-power operational <br>
-modes that allow advanced power saving and <br>
-smart sleep-to-wakeup functions.<br>
-The H3LIS200DL has dynamically user selectable full scales of ±100g/±200g and is <br>
-capable of measuring accelerations with output <br>
-data rates from 0.5 Hz to 1 kHz.<br>
-The H3LIS200DL is available in a small thin <br>
-plastic land grid array package (LGA) and is <br>
-guaranteed to operate over an extended <br>
-temperature range from -40 °C to +85 °C.<br>
+The LIS331HH is an ultra low-power high 
+performance high full-scale three axes linear 
+accelerometer belonging to the “nano” family, with 
+digital I2C/SPI serial interface standard output. <br>
+The device features ultra low-power operational 
+modes that allow advanced power saving and 
+smart sleep to wake-up functions. <br>
+The LIS331HH has dynamically user selectable 
+full scales of ±6g/±12g/±24g and it is capable of 
+measuring accelerations with output data rates 
+from 0.5 Hz to 1 kHz. The self-test capability 
+allows the user to check the functioning of the 
+sensor in the final application.<br>
+The device contains 2 indipendent interrupt 
+engines able to recognize dedicated inertial 
+events.<br>
+Thresholds and timing of interrupt generators are 
+programmable by the end user on the fly.<br>
+The LIS331HH is available in small thin plastic 
+land grid array package (LGA) and it is 
+guaranteed to operate over an extended 
+temperature range from -40 °C to +85 °C.
 
 
-## DFRobot_H3LIS200DL Library for RaspberryPi
+## DFRobot_LIS331HH Library for RaspberryPi
 ---------------------------------------------------------
 
-Provide an RaspberryPi library to get Three-axis acceleration by reading data from H3LIS200DL.
+Provide an RaspberryPi library to get Three-axis acceleration by reading data from LIS331HH.
 
 ## Table of Contents
 
@@ -30,121 +39,147 @@ Provide an RaspberryPi library to get Three-axis acceleration by reading data fr
 
 ## Summary
 
-Provide an RaspberryPi library to get Three-axis acceleration by reading data from H3LIS200DL.
+Provide an RaspberryPi library to get Three-axis acceleration by reading data from LIS331HH.
+
 
 ## Installation
 
-To use this library, first download the library file, paste it into the \Arduino\libraries directory, then open the examples folder and run the demo in the folder.
+
 
 ## Methods
 
-```C++
-#include <DFRobot_H3LIS200DL.h>
 
-  def begin(self):
-    '''
-      @brief Initialize the function
-      @return Return 0 indicates a successful initialization, while other values indicates failure and return to error code.
-    '''
-      
+```python
+  '''
+    @brief Initialize the function
+    @return Return 0 indicates a successful initialization, while other values indicates failure and return to error code.
+  '''
+  begin(self)
+  
+  '''
+    @brief get chip id
+    @return returns the 8 bit serial number
+  '''
+  get_id(self)
 
-  def getID(self):
-    '''
-      @brief Get chip id
-      @return Returns the eight-digit serial number
-    '''
+  '''
+    @brief Set the measurement range
+    @param range:Range(g)
+          RANGE_6G = 6#/**<±6G>*/
+          RANGE_12G = 12,#/**<±12G>*/
+          RANGE_24G = 24#/**<±24G>*/
+  '''
+  set_range(self,range_r)
+
+  '''
+    @brief Set data measurement rate
+    @param range:rate(HZ)
+                 POWERDOWN_0HZ = 0
+                 LOWPOWER_HALFHZ = 1 
+                 LOWPOWER_1HZ = 2
+                 LOWPOWER_2HZ = 3
+                 LOWPOWER_5HZ = 4
+                 LOWPOWER_10HZ = 5 
+                 NORMAL_50HZ = 6
+                 NORMAL_100HZ = 7
+                 NORMAL_400HZ = 8
+                 NORMAL_1000HZ = 9
+  '''
+  set_acquire_rate(self, rate)
 
 
-  def setRange(self,range_r):
-    '''
-      @brief Set the measurement range
-      @param range:Range(g)
-             eOnehundred =  ±100g
-             eTwohundred = ±200g
-    '''
+  '''
+    @brief Set the threshold of interrupt source 1 interrupt
+    @param threshold:Threshold(g)
+  '''
+  set_int1_th(self,threshold)
 
-  def setAcquireRate(self, rate):
-    '''
-      @brief Set data measurement rate
-      @param range:rate(g)
-    '''
+  '''
+    @brief Set interrupt source 2 interrupt generation threshold
+    @param threshold:Threshold(g)
+  '''
+  set_int2_th(self,threshold)
+  
+  '''
+    @brief Enable interrupt
+    @source Interrupt pin selection
+             INT_1 = 0,/<int pad 1 >/
+             INT_2,/<int pad 2>/
+    @param event Interrupt event selection
+                 X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
+                 X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
+                 Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
+                 Y_HIGHERTHAN_TH = 3<The acceleration in the y direction is greater than the threshold>
+                 Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
+                 Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
+                 EVENT_ERROR = 6 <No event>
+  '''
+  enable_int_event(self,source,event)
 
+  '''
+    @brief Check whether the interrupt event'source' is generated in interrupt 1
+    @param source:Interrupt event
+                  X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
+                  X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
+                  Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
+                  Y_HIGHERTHAN_TH = 3<The acceleration in the y direction is greater than the threshold>
+                  Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
+                  Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
+                  EVENT_ERROR = 6 <No event>
+    @return true ：produce
+            false：Interrupt event
+  '''
+  get_int1_event(self,source)
+         
+  '''
+    @brief Check whether the interrupt event'source' is generated in interrupt 2
+    @param source:Interrupt event
+                  X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
+                  X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
+                  Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
+                  Y_HIGHERTHAN_TH = 3<The acceleration in the y direction is greater than the threshold>
+                  Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
+                  Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
+                  EVENT_ERROR = 6 <No event>
+    @return true ：produce
+            false：Interrupt event
+  '''
+  get_int2_event(self,source)
 
-  def setIntOneTh(self,threshold):
-    '''
-      @brief Set the threshold of interrupt source 1 interrupt
-      @param threshold:Threshold(g)
-    '''
+  '''
+    @brief Enable sleep wake function
+    @param enable:True(enable)/False(disable)
+  '''
+  enable_sleep(self, enable)
+  
+  '''
+    @brief Set data filtering mode
+    @param mode:Four modes
+                CUTOFF_MODE1 = 0
+                CUTOFF_MODE2 = 1
+                CUTOFF_MODE3 = 2
+                CUTOFF_MODE4 = 3
+     High-pass filter cut-off frequency configuration
+    |--------------------------------------------------------------------------------------------------------|
+    |                |    ft [Hz]      |        ft [Hz]       |       ft [Hz]        |        ft [Hz]        |
+    |   mode         |Data rate = 50 Hz|   Data rate = 100 Hz |  Data rate = 400 Hz  |   Data rate = 1000 Hz |
+    |--------------------------------------------------------------------------------------------------------|
+    |  CUTOFF_MODE1  |     1           |         2            |            8         |             20        |
+    |--------------------------------------------------------------------------------------------------------|
+    |  CUTOFF_MODE2  |    0.5          |         1            |            4         |             10        |
+    |--------------------------------------------------------------------------------------------------------|
+    |  CUTOFF_MODE3  |    0.25         |         0.5          |            2         |             5         |
+    |--------------------------------------------------------------------------------------------------------|
+    |  CUTOFF_MODE4  |    0.125        |         0.25         |            1         |             2.5       |
+    |--------------------------------------------------------------------------------------------------------|
+  '''
+  set_filter_mode(self,mode)
 
-
-
-  def setIntTwoTh(self,threshold):
-    '''
-      @brief Set interrupt source 2 interrupt generation threshold
-      @param threshold:Threshold(g)
-    '''
-
-  def enableInterruptEvent(self,source,event):
-    '''
-      @brief Enable interrupt
-      @param source:Interrupt pin selection
-      @param event:Interrupt event selection
-    '''
-
-  def getInt1Event(self,source):
-    '''
-      @brief Check whether the interrupt event'source' is generated in interrupt 1
-      @param source:Interrupt event
-                    eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
-                    eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
-                    eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
-                    eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
-                    eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
-                    eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
-      @return true ：produce
-              false：Interrupt event
-    '''
-
-  def getInt2Event(self,source):
-    '''
-      @brief Check whether the interrupt event'source' is generated in interrupt 2
-      @param source:Interrupt event
-                    eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
-                    eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
-                    eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
-                    eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
-                    eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
-                    eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
-      @return true ：produce
-              false：Interrupt event
-    '''
-
-  def enableSleep(self, enable):
-    '''
-      @brief Enable sleep wake function
-      @param enable:true\false
-      @return 0
-    '''
-
-  def setHFilterMode(self,mode):
-    '''
-      @brief Set data filtering mode
-      @param mode:Four modes
-                eCutoffMode1 = 0,
-                eCutoffMode2,
-                eCutoffMode3,
-                eCutoffMode4,
-                eShutDown,
-    '''
-
-  def readAcceFromXYZ(self):
-    '''
-      @brief Get the acceleration in the three directions of xyz
-      @return Three-axis acceleration 
-              acceleration_x;
-              acceleration_y;
-              acceleration_z;
-    '''
+  '''
+    @brief Get the acceleration in the three directions of xyz
+    @return Three-axis acceleration 
+  '''
+  read_acce_xyz(self)
 
 ```
 
@@ -152,7 +187,7 @@ To use this library, first download the library file, paste it into the \Arduino
 
 MCU                | Work Well    | Work Wrong   | Untested    | Remarks
 ------------------ | :----------: | :----------: | :---------: | -----
-树莓派        |      √       |              |             | 
+raspberry pi 3             |      √         |            |             | 
 
 
 

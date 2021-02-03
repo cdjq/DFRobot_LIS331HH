@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 """
-   @file interrupt.py
-   @brief Enable interrupt events in the sensor, and get
-   @n the interrupt signal through the interrupt pin
+   @file wake_up.py
+ * @brief Use sleep wakeup function
+   @n 现象：在睡眠唤醒功能里面，当有中断产生，传感器采集速率明显变快
    @copyright  Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
    @licence     The MIT License (MIT)
    @author [fengli](li.feng@dfrobot.com)
@@ -12,23 +12,11 @@
    @https://github.com/DFRobot/DFRobot_LIS331HH
 """
 
-import threading
-
 import sys
 sys.path.append("../..") # set system path to top
 
 from DFRobot_LIS331HH import *
 import time
-
-
-
-INT1 = 26                           #Interrupt pin
-int_pad_Flag = False                 #intPad flag
-def int_pad_callback():
-  global int_pad_Flag
-  int_pad_Flag = True
-
-
 
 #如果你想要用SPI驱动此模块，打开下面两行的注释,并通过SPI连接好模块和树莓派
 #RASPBERRY_PIN_CS =  27              #Chip selection pin when SPI is selected
@@ -40,13 +28,8 @@ I2C_MODE         = 0x01             #default use I2C1
 ADDRESS_0        = 0x19             #I2C address
 acce = DFRobot_LIS331HH_I2C(I2C_MODE ,ADDRESS_0)
 
-int_pad = GPIO(INT1, GPIO.IN)                   # set int_Pad to input
-int_pad.setInterrupt(GPIO.FALLING, int_pad_callback) #set int_Pad interrupt callback
-
-
 #Chip initialization
 acce.begin()
-
 #Get chip id
 print("chip id :")
 print(acce.get_id())
@@ -61,24 +44,26 @@ acce.set_range(acce.RANGE_6G)
 
 '''
 Set data measurement rate
-     POWERDOWN_0HZ 
-     LOWPOWER_HALFHZ 
-     LOWPOWER_1HZ 
-     LOWPOWER_2HZ 
-     LOWPOWER_5HZ 
-     LOWPOWER_10HZ 
-     NORMAL_50HZ 
-     NORMAL_100HZ 
-     NORMAL_400HZ 
-     NORMAL_1000HZ 
+         POWERDOWN_0HZ 
+         LOWPOWER_HALFHZ 
+         LOWPOWER_1HZ 
+         LOWPOWER_2HZ 
+         LOWPOWER_5HZ 
+         LOWPOWER_10HZ 
+         NORMAL_50HZ 
+         NORMAL_100HZ 
+         NORMAL_400HZ 
+         NORMAL_1000HZ 
 '''
 acce.set_acquire_rate(acce.NORMAL_50HZ)
+'''
+   Set the threshold of interrupt source 1 interrupt
+   threshold Threshold(g),范围是设置好的的测量量程
+'''
+acce.set_int1_th(5)
 
-'''
-Set the threshold of interrupt source 1 interrupt
-threshold Threshold(g),范围是设置好的的测量量程
-'''
-acce.set_int1_th(2);
+#Enable sleep wake function
+acce.enable_sleep(True)
 
 '''
 @brief Enable interrupt
@@ -98,20 +83,8 @@ acce.enable_int_event(acce.INT_1,acce.Y_HIGHERTHAN_TH)
 time.sleep(1)
 
 while True:
-    
-    if(int_pad_Flag == True):
-      #Check whether the interrupt event'source' is generated in interrupt 1
-      if acce.get_int1_event(acce.Y_HIGHERTHAN_TH) == True:
-         print("The acceleration in the y direction is greater than the threshold")
-      
-      if acce.get_int1_event(acce.Z_HIGHERTHAN_TH) == True:
-        print("The acceleration in the z direction is greater than the threshold")
-       
-      if acce.get_int1_event(acce.X_HIGHERTHAN_TH) == True:
-        print("The acceleration in the x direction is greater than the threshold")
-      
-      int_pad_Flag = False
     #Get the acceleration in the three directions of xyz
+    #当有中断产生，能观察到芯片测量的频率明显变快
     x,y,z = acce.read_acce_xyz()
     time.sleep(0.1)
     print("Acceleration [X = %.2f g,Y = %.2f g,Z = %.2f g]"%(x,y,z))

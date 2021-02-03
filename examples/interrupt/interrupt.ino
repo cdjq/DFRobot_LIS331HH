@@ -12,23 +12,33 @@
  */
 
 #include <DFRobot_LIS331HH.h>
-volatile int Flag = 0;
+//当你使用I2C通信时,使用下面这段程序,使用DFRobot_LIS331HH_I2C构造对象
+/*!
+ * @brief Constructor 
+ * @param pWire I2c controller
+ * @param addr  I2C address(0x18/0x19)
+ */
+//DFRobot_LIS331HH_I2C acce(&Wire,0x19);
+DFRobot_LIS331HH_I2C acce;
+
+//当你使用SPI通信时,使用下面这段程序,使用DFRobot_LIS331HH_SPI构造对象
+#if defined(ESP32) || defined(ESP8266)
+#define LIS331HH_CS  D3
+#elif defined(__AVR__) || defined(ARDUINO_SAM_ZERO)
+#define LIS331HH_CS 3
+#elif (defined NRF5)
+#define LIS331HH_CS P3
+#endif
 /*!
  * @brief Constructor 
  * @param cs : Chip selection pinChip selection pin
  * @param spi :SPI controller
  */
 //DFRobot_LIS331HH_SPI acce(/*cs = */LIS331HH_CS);
-/*!
- * @brief Constructor 
- * @param pWire I2c controller
- * @param addr  I2C address(0x19/0x18)
- */
-//DFRobot_LIS331HH_I2C acce(&Wire,0x19);
-DFRobot_LIS331HH_I2C acce;
+volatile int intFlag = 0;
 void interEvent(){
-   Flag = 1;
-  // Serial.println("Flag = 2");
+   intFlag = 1;
+
 }
 void setup(void){
 
@@ -41,16 +51,17 @@ void setup(void){
   Serial.println(acce.getID(),HEX);
   
   /**
+
     set range:Range(g)
-              eLis331hhRange_6g /<±6g>/
-              eLis331hhRange_12g /<±12g>/
-              eLis331hhRange_24g /<±24g>/
+                  e6_g = ±6g
+                  e12_g = ±12g
+                  e24_g = ±24g
   */
-  acce.setRange(/*range = */DFRobot_LIS331HH::eLis331hhRange_6g);
+  acce.setRange(/*range = */DFRobot_LIS331HH::e6_g);
   
   /**
     Set data measurement rate：
-      ePowerDown = 0,
+      ePowerDown_0HZ = 0,
       eLowPower_halfHZ,
       eLowPower_1HZ,
       eLowPower_2HZ,
@@ -62,16 +73,8 @@ void setup(void){
       eNormal_1000HZ,
   */
   acce.setAcquireRate(/*rate = */DFRobot_LIS331HH::eLowPower_2HZ);
-  #ifdef ARDUINO_ARCH_MPYTHON 
-  /*                    The Correspondence Table of ESP32 Interrupt Pins And Terminal Numbers
-   * -----------------------------------------------------------------------------------------------------
-   * |            |  DigitalPin  | P0-P20 can be used as an external interrupt                           |
-   * |    esp32   |--------------------------------------------------------------------------------------|
-   * |            | Interrupt No |  DigitalPinToInterrupt (Pn) can be used to query the interrupt number |
-   * |---------------------------------------------------------------------------------------------------|
-   */
-  attachInterrupt(digitalPinToInterrupt(P16)/*Query the interrupt number of the P16 pin*/,interEvent,CHANGE);
-  //Open esp32's P16 pin for external interrupt, bilateral edge trigger, INT1/2 connected to P16
+  #if defined(ESP32) || defined(ESP8266)||defined(ARDUINO_SAM_ZERO)
+  attachInterrupt(digitalPinToInterrupt(D6)/*Query the interrupt number of the D6 pin*/,interEvent,CHANGE);
   #else
   /*    The Correspondence Table of AVR Series Arduino Interrupt Pins And Terminal Numbers
    * ---------------------------------------------------------------------------------------
@@ -103,7 +106,7 @@ void setup(void){
     Set the threshold of interrupt source 1 interrupt
     threshold:Threshold(g)
    */
-  acce.setIntOneTh(/*Threshold = */2);//单位为:g
+  acce.setInt1Th(/*Threshold = */2);//单位为:g
   
   /**
    * @brief Enable interrupt
@@ -124,19 +127,17 @@ void setup(void){
 }
 
 void loop(void){
-    //Get the acceleration in the three directions of xyz
-    DFRobot_LIS331HH::sAccel_t accel = acce.getAcceFromXYZ();
-    Serial.print("Acceleration x: "); //print acceleration
-    Serial.print(accel.acceleration_x);
-    Serial.print(" mg \ty: ");
-    Serial.print(accel.acceleration_y);
-    Serial.print(" mg \tz: ");
-    Serial.print(accel.acceleration_z);
-    Serial.println(" mg");
-    delay(100);  
+   //Get the acceleration in the three directions of xyz
+   Serial.print("Acceleration x: "); 
+   Serial.print(acce.readAccX());
+   Serial.print(" g \ty: ");
+   Serial.print(acce.readAccY());
+   Serial.print(" g \tz: ");
+   Serial.print(acce.readAccZ());
+   Serial.println(" g");
+
    
-   if(Flag == 1){
-      Serial.println("Flag = 1");
+   if(intFlag == 1){
       //Check whether the interrupt event'source' is generated in interrupt 1
       if(acce.getInt1Event(DFRobot_LIS331HH::eYhigherThanTh)){
         Serial.println("The acceleration in the y direction is greater than the threshold");
@@ -147,7 +148,7 @@ void loop(void){
       if(acce.getInt1Event(DFRobot_LIS331HH::eXhigherThanTh)){
         Serial.println("The acceleration in the x direction is greater than the threshold");
       }
-      Flag = 0;
+      intFlag = 0;
    }
-
+   delay(300);
 }

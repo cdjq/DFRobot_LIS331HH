@@ -13,13 +13,22 @@
 
 #include <DFRobot_LIS331HH.h>
 
+//当你使用I2C通信时,使用下面这段程序,使用DFRobot_LIS331HH_I2C构造对象
+/*!
+ * @brief Constructor 
+ * @param pWire I2c controller
+ * @param addr  I2C address(0x18/0x19)
+ */
+//DFRobot_LIS331HH_I2C acce(&Wire,0x19);
+DFRobot_LIS331HH_I2C acce;
 
+//当你使用SPI通信时,使用下面这段程序,使用DFRobot_LIS331HH_SPI构造对象
 #if defined(ESP32) || defined(ESP8266)
-#define LIS331HH_CS  D5
-
-/* AVR series mainboard */
-#else
+#define LIS331HH_CS  D3
+#elif defined(__AVR__) || defined(ARDUINO_SAM_ZERO)
 #define LIS331HH_CS 3
+#elif (defined NRF5)
+#define LIS331HH_CS P3
 #endif
 /*!
  * @brief Constructor 
@@ -27,13 +36,6 @@
  * @param spi :SPI controller
  */
 //DFRobot_LIS331HH_SPI acce(/*cs = */LIS331HH_CS);
-/*!
- * @brief Constructor 
- * @param pWire I2c controller
- * @param addr  I2C address(0x19/0x18)
- */
-//DFRobot_LIS331HH_I2C acce(&Wire,0x19);
-DFRobot_LIS331HH_I2C acce;
 void setup(void){
 
   Serial.begin(9600);
@@ -47,15 +49,15 @@ void setup(void){
   
   /**
     set range:Range(g)
-              eLis331hhRange_6g /<±6g>/
-              eLis331hhRange_12g /<±12g>/
-              eLis331hhRange_24g /<±24g>/
+                  e6_g = ±6g
+                  e12_g = ±12g
+                  e24_g = ±24g
   */
-  acce.setRange(/*range = */DFRobot_LIS331HH::eLis331hhRange_6g);
+  acce.setRange(/*range = */DFRobot_LIS331HH::e6_g);
 
   /**
     Set data measurement rate：
-      ePowerDown = 0,
+      ePowerDown_0HZ = 0,
       eLowPower_halfHZ,
       eLowPower_1HZ,
       eLowPower_2HZ,
@@ -71,14 +73,21 @@ void setup(void){
 }
 
 void loop(void){
+
+
+
     //Get the acceleration in the three directions of xyz
-    DFRobot_LIS331HH::sAccel_t accel = acce.getAcceFromXYZ();
+    long ax,ay,az;
+    ax = acce.readAccX();//Get the acceleration in the x direction
+    ay = acce.readAccY();//Get the acceleration in the y direction
+    az = acce.readAccZ();//Get the acceleration in the z direction
+    //acce.getAcceFromXYZ(/*accx = */ax,/*accy = */ay,/*accz = */az);//第二种获取三方向加速度的方法
     Serial.print("Acceleration x: "); //print acceleration
-    Serial.print(accel.acceleration_x);
-    Serial.print(" mg \ty: ");
-    Serial.print(accel.acceleration_y);
-    Serial.print(" mg \tz: ");
-    Serial.print(accel.acceleration_z);
-    Serial.println(" mg");
+    Serial.print(ax);
+    Serial.print(" g \ty: ");
+    Serial.print(ay);
+    Serial.print(" g \tz: ");
+    Serial.print(az);
+    Serial.println(" g");
     delay(300);
 }
