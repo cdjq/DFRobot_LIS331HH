@@ -76,7 +76,7 @@ acce.set_acquire_rate(acce.NORMAL_50HZ)
 
 '''
 Set the threshold of interrupt source 1 interrupt
-threshold Threshold(g),范围是设置好的的测量量程
+threshold Threshold(g),设置的阈值在量程之内(unit:g)
 '''
 acce.set_int1_th(2);
 
