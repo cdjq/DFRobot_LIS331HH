@@ -52,13 +52,12 @@ class DFRobot_LIS331HH(object):
   LIS331HH_REG_CTRL_REG6 = 0x25     #/*Control register 6*/
   LIS331HH_REG_STATUS_REG = 0x27     #/*Status register*/
   LIS331HH_REG_OUT_X_L = 0x28     #/*Acceleration register*/
-  LIS331HH_REG_OUT_X_H  =    0x29     #/*The high point of the X-axis acceleration register*/
+  LIS331HH_REG_OUT_X_H  =    0x29    #/*The high point of the X-axis acceleration register*/
   LIS331HH_REG_OUT_Y_L    =  0x2A     #/*The low order of the Y-axis acceleration register*/
   LIS331HH_REG_OUT_Y_H     = 0x2B     #/*The high point of the Y-axis acceleration register*/
   LIS331HH_REG_OUT_Z_L    =  0x2C     #/*The low order of the Z-axis acceleration register*/
   LIS331HH_REG_OUT_Z_H    =  0x2D     #/*The high point of the Z-axis acceleration register*/
-  LIS331HH_REG_OUT_Y = 0x2B     #/*Acceleration register*/
-  LIS331HH_REG_OUT_Z = 0x2D     # /*Acceleration register*/
+
   LIS331HH_REG_INT1_THS = 0x32     #/*Interrupt source 1 threshold*/
   LIS331HH_REG_INT2_THS = 0x36     #/*Interrupt source 2 threshold*/
   LIS331HH_REG_INT1_CFG = 0x30     #/*Interrupt source 1 configuration register*/
