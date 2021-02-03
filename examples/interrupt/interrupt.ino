@@ -142,7 +142,7 @@ void loop(void){
       if(acce.getInt1Event(DFRobot_LIS331HH::eYhigherThanTh)){
         Serial.println("The acceleration in the y direction is greater than the threshold");
       }
-     if(acce.getInt1Event(DFRobot_LIS331HH::eZhigherThanTh)){
+      if(acce.getInt1Event(DFRobot_LIS331HH::eZhigherThanTh)){
        Serial.println("The acceleration in the z direction is greater than the threshold");
       }
       if(acce.getInt1Event(DFRobot_LIS331HH::eXhigherThanTh)){
