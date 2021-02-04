@@ -55,7 +55,7 @@ Set data measurement rate
          NORMAL_400HZ 
          NORMAL_1000HZ 
 '''
-acce.set_acquire_rate(acce.NORMAL_50HZ)
+acce.set_acquire_rate(acce.LOWPOWER_HALFHZ)
 '''
    Set the threshold of interrupt source 1 interrupt
    threshold Threshold(g),范围是设置好的的测量量程

@@ -276,7 +276,7 @@ int DFRobot_LIS331HH::enableSleep(bool enable)
     regester  = REG_CTRL_REG5 | 0x80;
   }
   readReg(regester,&readRe,1);
-  
+  state = true;
   if(reg == readRe)
     return 0;
   else 
@@ -335,7 +335,14 @@ long DFRobot_LIS331HH::readAccX(){
   }
 
 }
+bool DFRobot_LIS331HH::getSleepState()
+{
+  return state;
+}
+void DFRobot_LIS331HH::setSleepState(bool into){
 
+   state = into;
+}
 bool DFRobot_LIS331HH::getAcceFromXYZ(long &accx,long &accy,long &accz)
 {
 

@@ -40,6 +40,7 @@ DFRobot_LIS331HH_I2C acce;
 volatile int intFlag = 0;
 void interEvent(){
   intFlag = 1;
+  acce.setSleepFlag(false);
 }
 void setup(void){
 
@@ -141,7 +142,12 @@ void loop(void){
   Serial.print(acce.readAccZ());
   Serial.println(" g");
   if(intFlag == 1){
-    Serial.println("wake up");
+    /**
+     获取传感器是否处于睡眠模式
+     true(处于睡眠模式)/false(处于正常模式)
+     */
+    Serial.print("sleep state: ");
+    Serial.println(acce.getSleepState());
     intFlag = 0;
   }
   delay(300);

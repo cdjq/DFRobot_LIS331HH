@@ -289,10 +289,24 @@ public:
    * @param accz 储存z方向加速度的变量
    */
   bool getAcceFromXYZ(long &accx,long &accy,long &accz);
+  
+  /**
+   * @brief 获取传感器是否处于睡眠模式
+   * @return true(处于睡眠模式)/false(处于正常模式)
+   */
+  bool getSleepState();
+  
+  /**
+   * @brief 设置睡眠状态的标志
+   * @param true(将现在的模式标记为睡眠模式)
+            false(将现在的模式标记为正常模式)
+   */
+  void setSleepFlag(bool into);
 protected:
   uint8_t _interface = 0;
   uint8_t reset = 0;
   eRange_t _range = e6_g;
+  bool state = true;
   //uint8_t sensorData[6];
   //uint8_t readFlag = 0;
   //uint8_t dir = 1;
