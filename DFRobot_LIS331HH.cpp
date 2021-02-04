@@ -339,7 +339,7 @@ bool DFRobot_LIS331HH::getSleepState()
 {
   return state;
 }
-void DFRobot_LIS331HH::setSleepState(bool into){
+void DFRobot_LIS331HH::setSleepFlag(bool into){
 
    state = into;
 }
