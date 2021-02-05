@@ -163,12 +163,12 @@ To use this library, first download the library file, paste it into the \Arduino
   /**
    * @brief Check whether the interrupt event'event' is generated in interrupt 2
    * @param event Interrupt event
-    in the y direction is less than the threshold>/
+                   eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
+                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
+                   eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
                    eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
                    eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
-                       eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
-                   eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
-                   eYLowThanTh,/<The acceleration            eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
+                   eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
    * @return true 产生了此事件
              false 未产生此事件
    */
