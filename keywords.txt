@@ -34,8 +34,8 @@ getInt1Event	KEYWORD2
 readAccX	KEYWORD2
 readAccZ	KEYWORD2
 readAccY	KEYWORD2
-
-
+getSleepState	KEYWORD2
+setSleepFlag	KEYWORD2
 
 
 

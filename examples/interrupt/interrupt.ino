@@ -110,7 +110,7 @@ void setup(void){
   
   /**
    * @brief Enable interrupt
-   * @ source:Interrupt pin selection
+   * @param source Interrupt pin selection
               eINT1 = 0,/<int1 >/
               eINT2,/<int2>/
    * @param event:Interrupt event selection
@@ -138,7 +138,7 @@ void loop(void){
 
    
    if(intFlag == 1){
-      //Check whether the interrupt event'source' is generated in interrupt 1
+      //Check whether the interrupt event is generated in interrupt 1
       if(acce.getInt1Event(DFRobot_LIS331HH::eYhigherThanTh)){
         Serial.println("The acceleration in the y direction is greater than the threshold");
       }

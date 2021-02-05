@@ -17,10 +17,6 @@ sys.path.append("../..") # set system path to top
 from DFRobot_LIS331HH import *
 import time
 
-
-
-
-
 #如果你想要用SPI驱动此模块，打开下面两行的注释,并通过SPI连接好模块和树莓派
 #RASPBERRY_PIN_CS =  27              #Chip selection pin when SPI is selected
 #acce = DFRobot_LIS331HH_SPI(RASPBERRY_PIN_CS)

@@ -18,6 +18,12 @@ sys.path.append("../..") # set system path to top
 from DFRobot_LIS331HH import *
 import time
 
+INT1 = 26                           #Interrupt pin
+int_pad_Flag = False                 #intPad flag
+def int_pad_callback():
+  global int_pad_Flag
+  int_pad_Flag = True
+
 #如果你想要用SPI驱动此模块，打开下面两行的注释,并通过SPI连接好模块和树莓派
 #RASPBERRY_PIN_CS =  27              #Chip selection pin when SPI is selected
 #acce = DFRobot_LIS331HH_SPI(RASPBERRY_PIN_CS)
@@ -27,6 +33,8 @@ import time
 I2C_MODE         = 0x01             #default use I2C1
 ADDRESS_0        = 0x19             #I2C address
 acce = DFRobot_LIS331HH_I2C(I2C_MODE ,ADDRESS_0)
+
+int_pad.setInterrupt(GPIO.FALLING, int_pad_callback) #set int_Pad 
 
 #Chip initialization
 acce.begin()
@@ -67,7 +75,7 @@ acce.enable_sleep(True)
 
 '''
 @brief Enable interrupt
-@source Interrupt pin selection
+@param source Interrupt pin selection
          INT_1 = 0,/<int pad 1 >/
          INT_2,/<int pad 2>/
 @param event Interrupt event selection
@@ -88,3 +96,5 @@ while True:
     x,y,z = acce.read_acce_xyz()
     time.sleep(0.1)
     print("Acceleration [X = %.2f g,Y = %.2f g,Z = %.2f g]"%(x,y,z))
+    if(int_pad_Flag == True):
+      print("Out of sleep mode")

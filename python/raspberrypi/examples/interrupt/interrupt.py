@@ -20,15 +20,11 @@ sys.path.append("../..") # set system path to top
 from DFRobot_LIS331HH import *
 import time
 
-
-
 INT1 = 26                           #Interrupt pin
 int_pad_Flag = False                 #intPad flag
 def int_pad_callback():
   global int_pad_Flag
   int_pad_Flag = True
-
-
 
 #如果你想要用SPI驱动此模块，打开下面两行的注释,并通过SPI连接好模块和树莓派
 #RASPBERRY_PIN_CS =  27              #Chip selection pin when SPI is selected
@@ -82,7 +78,7 @@ acce.set_int1_th(2);
 
 '''
 @brief Enable interrupt
-@source Interrupt pin selection
+@param source Interrupt pin selection
          INT_1 = 0,/<int pad 1 >/
          INT_2,/<int pad 2>/
 @param event Interrupt event selection

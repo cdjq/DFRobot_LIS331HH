@@ -147,7 +147,7 @@ class DFRobot_LIS331HH(object):
   RANGE_24G = 24#/**<±24G>*/
 
   '''
-  # High-pass filter cut-off frequency configuration
+  #                          High-pass filter cut-off frequency configuration
   # |--------------------------------------------------------------------------------------------------------|
   # |                |    ft [Hz]      |        ft [Hz]       |       ft [Hz]        |        ft [Hz]        |
   # |   mode         |Data rate = 50 Hz|   Data rate = 100 Hz |  Data rate = 400 Hz  |   Data rate = 1000 Hz |
@@ -249,7 +249,7 @@ class DFRobot_LIS331HH(object):
   
   '''
     @brief Set data measurement rate
-    @param range:rate(HZ)
+    @param rate:rate(HZ)
                  POWERDOWN_0HZ = 0
                  LOWPOWER_HALFHZ = 1 
                  LOWPOWER_1HZ = 2
@@ -328,7 +328,7 @@ class DFRobot_LIS331HH(object):
   
   '''
     @brief Enable interrupt
-    @source Interrupt pin selection
+    @param source Interrupt pin selection
              INT_1 = 0,/<int pad 1 >/
              INT_2,/<int pad 2>/
     @param event Interrupt event selection
@@ -375,8 +375,8 @@ class DFRobot_LIS331HH(object):
       self.write_reg(self.REG_INT2_CFG,reg)
 
   '''
-    @brief Check whether the interrupt event'source' is generated in interrupt 1
-    @param source:Interrupt event
+    @brief Check whether the interrupt event'event' is generated in interrupt 1
+    @param event:Interrupt event
                   X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
                   X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
                   Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
@@ -384,10 +384,10 @@ class DFRobot_LIS331HH(object):
                   Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
                   Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
                   EVENT_ERROR = 6 <No event>
-    @return true ：produce
-            false：Interrupt event
+    @return true 产生了此事件
+             false 未产生此事件
   '''
-  def get_int1_event(self,source):
+  def get_int1_event(self,event):
     regester = self.REG_INT1_SRC;
     if(self.__uart_i2c == SPI_MODE):
       regester  = self.REG_INT1_SRC | 0x80;
@@ -400,8 +400,8 @@ class DFRobot_LIS331HH(object):
          return False
          
   '''
-    @brief Check whether the interrupt event'source' is generated in interrupt 2
-    @param source:Interrupt event
+    @brief Check whether the interrupt event'event' is generated in interrupt 2
+    @param event:Interrupt event
                   X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
                   X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
                   Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
@@ -409,10 +409,10 @@ class DFRobot_LIS331HH(object):
                   Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
                   Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
                   EVENT_ERROR = 6 <No event>
-    @return true ：produce
-            false：Interrupt event
+    @return true 产生了此事件
+             false 未产生此事件
   '''
-  def get_int2_event(self,source):
+  def get_int2_event(self,event):
     regester = self.REG_INT2_SRC
     if(self.__uart_i2c == SPI_MODE):
       regester  = self.REG_INT2_SRC | 0x80;

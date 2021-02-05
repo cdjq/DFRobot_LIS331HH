@@ -1,4 +1,4 @@
-# DFRobot_H3LIS200DL
+# DFRobot_LIS331HH
 The LIS331HH is an ultra low-power high 
 performance high full-scale three axes linear 
 accelerometer belonging to the “nano” family, with 
@@ -73,7 +73,7 @@ Provide an RaspberryPi library to get Three-axis acceleration by reading data fr
 
   '''
     @brief Set data measurement rate
-    @param range:rate(HZ)
+    @param rate:rate(HZ)
                  POWERDOWN_0HZ = 0
                  LOWPOWER_HALFHZ = 1 
                  LOWPOWER_1HZ = 2
@@ -102,7 +102,7 @@ Provide an RaspberryPi library to get Three-axis acceleration by reading data fr
   
   '''
     @brief Enable interrupt
-    @source Interrupt pin selection
+    @param source Interrupt pin selection
              INT_1 = 0,/<int pad 1 >/
              INT_2,/<int pad 2>/
     @param event Interrupt event selection
@@ -117,8 +117,8 @@ Provide an RaspberryPi library to get Three-axis acceleration by reading data fr
   enable_int_event(self,source,event)
 
   '''
-    @brief Check whether the interrupt event'source' is generated in interrupt 1
-    @param source:Interrupt event
+    @brief Check whether the interrupt event'event' is generated in interrupt 1
+    @param event:Interrupt event
                   X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
                   X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
                   Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
@@ -126,14 +126,14 @@ Provide an RaspberryPi library to get Three-axis acceleration by reading data fr
                   Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
                   Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
                   EVENT_ERROR = 6 <No event>
-    @return true ：produce
-            false：Interrupt event
+    @return true 产生了此事件
+             false 未产生此事件
   '''
-  get_int1_event(self,source)
+  get_int1_event(self,event)
          
   '''
-    @brief Check whether the interrupt event'source' is generated in interrupt 2
-    @param source:Interrupt event
+    @brief Check whether the interrupt event'event' is generated in interrupt 2
+    @param event:Interrupt event
                   X_LOWTHAN_TH = 0 <The acceleration in the x direction is less than the threshold>
                   X_HIGHERTHAN_TH  = 1<The acceleration in the x direction is greater than the threshold>
                   Y_LOWTHAN_TH = 2<The acceleration in the y direction is less than the threshold>
@@ -141,10 +141,10 @@ Provide an RaspberryPi library to get Three-axis acceleration by reading data fr
                   Z_LOWTHAN_TH = 4<The acceleration in the z direction is less than the threshold
                   Z_HIGHERTHAN_TH = 5<The acceleration in the z direction is greater than the threshold>
                   EVENT_ERROR = 6 <No event>
-    @return true ：produce
-            false：Interrupt event
+    @return true 产生了此事件
+             false 未产生此事件
   '''
-  get_int2_event(self,source)
+  get_int2_event(self,event)
 
   '''
     @brief Enable sleep wake function

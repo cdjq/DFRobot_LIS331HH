@@ -85,7 +85,7 @@ typedef enum{
   e24_g = 24/**<±24g>*/
 }eRange_t;
 
-/*!     High-pass filter cut-off frequency configuration
+/*!                      High-pass filter cut-off frequency configuration
  * |--------------------------------------------------------------------------------------------------------|
  * |                |    ft [Hz]      |        ft [Hz]       |       ft [Hz]        |        ft [Hz]        |
  * |   mode         |Data rate = 50 Hz|   Data rate = 100 Hz |  Data rate = 400 Hz  |   Data rate = 1000 Hz |
@@ -128,16 +128,6 @@ typedef enum{
   eINT2,/**<int2>*/
 }eInterruptSource_t;
 
-/**
-  Store acceleration in three directions
-*/
-typedef struct
-{
- long acceleration_x;/**<acceleration in x direction(g)>*/
- long acceleration_y;/**<acceleration in y direction(g)>*/
- long acceleration_z;/**<acceleration in z direction(g)>*/
-}sAccel_t;
-
 public:
   DFRobot_LIS331HH();
     
@@ -155,7 +145,7 @@ public:
   
   /**
    * @brief Enable interrupt
-   * @ source Interrupt pin selection
+   * @param source Interrupt pin selection
               eINT1 = 0,/<int1 >/
               eINT2,/<int2>/
    * @param event Interrupt event selection
@@ -179,7 +169,7 @@ public:
   
   /**
    * @brief Set data measurement rate
-   * @param range:rate(HZ)
+   * @param rate:rate(HZ)
                   ePowerDown_0HZ   //测量关闭
                   eLowPower_halfHZ //0.5 hz
                   eLowPower_1HZ
@@ -237,32 +227,32 @@ public:
   int enableSleep(bool enable);
 
   /**
-   * @brief Check whether the interrupt event'source' is generated in interrupt 1
-   * @param source Interrupt event
+   * @brief Check whether the interrupt event'event' is generated in interrupt 1
+   * @param event Interrupt event
                    eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
                    eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
                    eYLowThanTh,/<The acceleration in the y direction is less than the threshold>/
                    eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
                    eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
                    eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
-   * @return true produce
-             false Interrupt event
+   * @return true 产生了此事件
+             false 未产生此事件
    */
-  bool getInt1Event(eInterruptEvent_t source);
+  bool getInt1Event(eInterruptEvent_t event);
   
   /**
-   * @brief Check whether the interrupt event'source' is generated in interrupt 2
-   * @param source Interrupt event
+   * @brief Check whether the interrupt event'event' is generated in interrupt 2
+   * @param event Interrupt event
     in the y direction is less than the threshold>/
                    eYhigherThanTh,/<The acceleration in the y direction is greater than the threshold>/
                    eZLowThanTh,/<The acceleration in the z direction is less than the threshold>/
                        eXLowThanTh = 0,/<The acceleration in the x direction is less than the threshold>/
                    eXhigherThanTh ,/<The acceleration in the x direction is greater than the threshold>/
                    eYLowThanTh,/<The acceleration            eZhigherThanTh,/<The acceleration in the z direction is greater than the threshold>/
-   * @return true produce
-             false Interrupt event
+   * @return true 产生了此事件
+             false 未产生此事件
    */
-  bool getInt2Event(eInterruptEvent_t source);
+  bool getInt2Event(eInterruptEvent_t event);
   
   /**
    * @brief Get the acceleration in the x direction
@@ -307,10 +297,7 @@ protected:
   uint8_t reset = 0;
   eRange_t _range = e6_g;
   bool state = true;
-  //uint8_t sensorData[6];
-  //uint8_t readFlag = 0;
-  //uint8_t dir = 1;
-  //uint8_t dir = 1;
+
   virtual uint8_t readReg(uint8_t reg,void * pBuf ,size_t size) = 0;
   /**
    * @brief Write command into sensor chip 
@@ -320,14 +307,6 @@ protected:
    */
   virtual uint8_t  writeReg(uint8_t reg,const void *pBuf,size_t size)= 0; 
 private:
-  /**
-   * @brief Get the acceleration in the three directions of xyz
-   * @return Three-axis acceleration 
-             acceleration_x;
-             acceleration_y;
-             acceleration_z;
-   */
-  sAccel_t getAcceFromXYZ();
    void enableXYZ();
 };
 
